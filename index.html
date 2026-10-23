@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chaos Chef</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,800;1,9..144,500&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --chaos: .2; }
+
+  /* ============ The three kitchens ============ */
+  /* Low temperature: blue-and-white enamel cookbook kitchen */
+  body[data-mode="classic"] {
+    --bg: #f3f7fc; --paper: #ffffff; --ink: #12243f; --muted: #5b6b84;
+    --accent: #1f4fb8; --accent-ink: #ffffff; --pop: #9cc3ff; --pop2: #ffd166;
+    --line: #d6e2f2; --border: 1px solid var(--line);
+    --shadow: 0 1px 0 var(--line), 0 12px 30px rgba(31,79,184,.08);
+    --radius: 14px; --display: 'Fraunces', Georgia, serif;
+    --pattern: linear-gradient(#e2ebf7 1px, transparent 1px), linear-gradient(90deg, #e2ebf7 1px, transparent 1px);
+    --pattern-size: 44px 44px;
+  }
+  /* Medium: bistro gingham tablecloth */
+  body[data-mode="bistro"] {
+    --bg: #fff8ef; --paper: #fffdf8; --ink: #3a1a12; --muted: #8a5a48;
+    --accent: #d7261e; --accent-ink: #ffffff; --pop: #a3c55a; --pop2: #ffd166;
+    --line: #efc3b2; --border: 2px dashed var(--line);
+    --shadow: 0 8px 0 rgba(215,38,30,.12);
+    --radius: 20px; --display: 'Fraunces', Georgia, serif;
+    --pattern: repeating-linear-gradient(0deg, rgba(215,38,30,.07) 0 22px, transparent 22px 44px),
+               repeating-linear-gradient(90deg, rgba(215,38,30,.07) 0 22px, transparent 22px 44px);
+    --pattern-size: auto;
+  }
+  /* High temperature: neon night market */
+  body[data-mode="chaos"] {
+    --bg: #2a0a3d; --paper: #3a1257; --ink: #fff7fd; --muted: #e6c4ff;
+    --accent: #ff3dac; --accent-ink: #ffffff; --pop: #2ef2ff; --pop2: #ffe14d;
+    --line: #2ef2ff; --border: 3px solid var(--pop);
+    --shadow: 6px 6px 0 var(--pop2);
+    --radius: 6px; --display: 'Bungee', Impact, sans-serif;
+    --pattern: radial-gradient(circle at 15% 10%, rgba(255,61,172,.35), transparent 35%),
+               radial-gradient(circle at 85% 30%, rgba(46,242,255,.22), transparent 35%),
+               radial-gradient(circle at 40% 95%, rgba(255,225,77,.18), transparent 40%);
+    --pattern-size: auto;
+  }
+
+  /* ============ Base ============ */
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    background-color: var(--bg); background-image: var(--pattern);
+    background-size: var(--pattern-size); background-attachment: fixed;
+    color: var(--ink); font-family: 'Nunito', system-ui, sans-serif; font-size: 17px; line-height: 1.5;
+    transition: background-color .5s, color .5s;
+  }
+  button { font: inherit; cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--pop2); outline-offset: 3px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 28px 16px 80px; position: relative; z-index: 1; }
+
+  /* ============ Hero: the chef ============ */
+  .hero { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 28px; }
+  .chef { position: relative; font-size: 4.4rem; line-height: 1; animation: bob var(--speed, 2.4s) ease-in-out infinite; }
+  .chef .mood {
+    position: absolute; right: -14px; bottom: -6px; width: 2.3rem; height: 2.3rem; font-size: 1.5rem;
+    display: grid; place-items: center; border-radius: 50%;
+    background: var(--paper); border: var(--border); box-shadow: var(--shadow);
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0) rotate(calc(var(--chaos) * -8deg)); }
+    50% { transform: translateY(-6px) rotate(calc(var(--chaos) * 8deg)); }
+  }
+  .title {
+    font-family: var(--display); font-weight: 800; font-size: clamp(2.6rem, 10vw, 4.8rem);
+    line-height: 1; margin: 14px 0 0; letter-spacing: -.01em;
+  }
+  .title span {
+    display: inline-block;
+    transform: translateY(calc(var(--b) * var(--chaos) * 12px)) rotate(calc(var(--a) * var(--chaos) * 24deg));
+    transition: transform .35s cubic-bezier(.3,1.6,.5,1), color .4s;
+  }
+  body[data-mode="chaos"] .title span:nth-child(3n)   { color: var(--accent); }
+  body[data-mode="chaos"] .title span:nth-child(3n+1) { color: var(--pop); }
+  body[data-mode="chaos"] .title span:nth-child(3n+2) { color: var(--pop2); }
+  .speech {
+    position: relative; margin: 18px 0 0; max-width: 36ch; padding: 10px 18px;
+    background: var(--paper); border: var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+    font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 1.05rem;
+  }
+  .speech::before {
+    content: ""; position: absolute; top: -8px; left: 50%; width: 14px; height: 14px;
+    background: var(--paper); transform: translateX(-50%) rotate(45deg);
+  }
+  .speech.pop { animation: pop .35s ease; }
+  @keyframes pop { 0% { transform: scale(.92); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
+
+  /* ============ Counter: fridge + dial ============ */
+  .counter { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 22px; align-items: start; margin-bottom: 30px; }
+  @media (max-width: 820px) { .counter { grid-template-columns: minmax(0, 1fr); } }
+  .panel {
+    background: var(--paper); border: var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 22px; transition: background-color .4s, border-radius .4s, box-shadow .4s, transform .4s;
+  }
+  .panel h2, .table-title { font-family: var(--display); font-size: 1.35rem; font-weight: 800; margin: 0 0 4px; }
+  .hint { color: var(--muted); margin: 0 0 14px; font-size: .95rem; }
+
+  /* Fridge door */
+  .fridge { position: relative; padding-right: 44px; transform: rotate(calc(var(--chaos) * -1.2deg)); }
+  .fridge::after {
+    content: ""; position: absolute; top: 24px; right: 14px; width: 10px; height: 130px;
+    border-radius: 6px; background: var(--line);
+  }
+  .magnets {
+    display: flex; flex-wrap: wrap; gap: 10px; min-height: 66px; padding: 12px; margin-bottom: 12px;
+    border-radius: calc(var(--radius) - 4px); background: color-mix(in srgb, var(--ink) 5%, transparent);
+  }
+  .magnets:empty::before { content: "Nothing on the door yet. Add a few ingredients."; color: var(--muted); font-size: .95rem; align-self: center; }
+  .magnet {
+    border: none; background: var(--c); color: #1d1330; font-weight: 800; padding: 8px 12px;
+    border-radius: 10px; box-shadow: 0 3px 0 rgba(0,0,0,.2);
+    transform: rotate(var(--t)); transition: transform .2s;
+  }
+  .magnet:hover { transform: rotate(0deg) scale(1.07); }
+  .magnet .x { margin-left: 8px; opacity: .5; }
+  .magnet.drop { animation: drop .4s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes drop {
+    0% { transform: translateY(-20px) rotate(var(--t)) scale(.6); opacity: 0; }
+    100% { transform: rotate(var(--t)); opacity: 1; }
+  }
+  .add-row, .follow-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .follow-row { margin-bottom: 0; }
+  .field {
+    flex: 1; min-width: 0; padding: 11px 14px; font: inherit; color: var(--ink);
+    background: var(--paper); border: var(--border); border-radius: calc(var(--radius) - 4px);
+  }
+  .field::placeholder { color: var(--muted); }
+  .pantry, .presets, .quick { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pantry { margin-bottom: 18px; }
+  .chip {
+    border: var(--border); background: transparent; color: var(--ink);
+    padding: 5px 11px; border-radius: 999px; font-size: .92rem; font-weight: 700;
+    transition: background-color .2s, transform .15s;
+  }
+  .chip:hover { transform: translateY(-1px); }
+  .chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .chip:disabled { opacity: .5; cursor: wait; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    border: none; background: var(--accent); color: var(--accent-ink); font-weight: 800;
+    padding: 12px 20px; border-radius: calc(var(--radius) - 4px); transition: transform .15s;
+  }
+  .btn:active { transform: scale(.96); }
+  .btn:disabled { opacity: .55; cursor: wait; }
+  .btn.ghost { background: transparent; color: var(--ink); border: var(--border); }
+  .btn.big { flex: 1; font-size: 1.15rem; padding: 14px 24px; }
+  body[data-mode="chaos"] .btn.big { font-family: 'Bungee', sans-serif; font-weight: 400; box-shadow: 4px 4px 0 var(--pop2); }
+  .shake { animation: shake .4s; }
+  @keyframes shake { 20%, 60% { translate: -7px 0; } 40%, 80% { translate: 7px 0; } }
+
+  /* Chaos dial */
+  .dial { transform: rotate(calc(var(--chaos) * 1.8deg)); }
+  .dial-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; }
+  .temp-value { font-family: var(--display); font-size: 2.6rem; font-weight: 800; color: var(--accent); line-height: 1; }
+  .range-wrap { position: relative; padding-top: 48px; margin-top: 4px; }
+  .thumb-badge { position: absolute; top: 0; transform: translateX(-50%); font-size: 2rem; pointer-events: none; }
+  input[type=range] {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 16px; margin: 0; border-radius: 999px; cursor: pointer;
+    background: linear-gradient(90deg, #5ec8ff, #9be7a8 30%, #ffd166 55%, #ff8a3d 78%, #ff3dac);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 30px; height: 30px; border-radius: 50%;
+    background: #fff; border: 4px solid var(--ink); box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 4px solid var(--ink); }
+  .scale { display: flex; justify-content: space-between; font-size: .85rem; color: var(--muted); margin-top: 8px; }
+  .presets { margin-top: 16px; }
+  .mode-line { margin: 14px 0 0; font-weight: 700; }
+
+  /* ============ The table: orders + recipes ============ */
+  .table-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
+  #chat { display: flex; flex-direction: column; gap: 18px; }
+  .order {
+    align-self: flex-end; max-width: 85%; padding: 10px 16px; font-weight: 700;
+    background: var(--accent); color: var(--accent-ink); border-radius: var(--radius) var(--radius) 4px var(--radius);
+  }
+  .order small { display: block; font-weight: 600; opacity: .85; }
+  .made {
+    display: block; width: fit-content; margin-bottom: 10px; padding: 3px 10px; border-radius: 999px;
+    font-size: .85rem; font-weight: 800; background: var(--pop2); color: #2a1a00; white-space: normal;
+  }
+  .reply {
+    align-self: flex-start; max-width: 92%; padding: 16px 18px; white-space: pre-wrap;
+    background: var(--paper); border: var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+  }
+  .error { align-self: center; padding: 12px 16px; border-radius: 12px; font-weight: 700; background: #ffe3e3; color: #8f1414; }
+  .cooking { align-self: flex-start; display: flex; align-items: center; gap: 14px; color: var(--muted); font-weight: 700; }
+  .pot { position: relative; font-size: 2.4rem; line-height: 1; animation: bob .8s ease-in-out infinite; }
+  .pot i {
+    position: absolute; left: 50%; top: -4px; width: 9px; height: 9px; border-radius: 50%;
+    background: var(--muted); opacity: 0; animation: steam 1.4s ease-out infinite;
+  }
+  .pot i:nth-child(2) { animation-delay: .45s; margin-left: -12px; }
+  .pot i:nth-child(3) { animation-delay: .9s; margin-left: 10px; }
+  @keyframes steam { 0% { transform: translateY(0) scale(.6); opacity: .6; } 100% { transform: translateY(-28px) scale(1.7); opacity: 0; } }
+
+  /* Recipe card */
+  .recipe {
+    position: relative; padding: 24px 22px 18px;
+    background: var(--paper); border: var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+    transform: rotate(calc(var(--r) * var(--chaos) * 2.4deg));
+    transition: transform .4s, background-color .4s;
+    animation: serve .55s cubic-bezier(.3,1.5,.5,1);
+  }
+  @keyframes serve { 0% { opacity: 0; translate: 0 26px; scale: .96; } 100% { opacity: 1; translate: 0 0; scale: 1; } }
+  body[data-mode="bistro"] .recipe::before {
+    content: ""; position: absolute; top: -12px; left: 50%; width: 110px; height: 26px;
+    translate: -50% 0; rotate: -3deg; background: rgba(255,209,102,.8);
+  }
+  body[data-mode="chaos"] .recipe::after {
+    content: "100% chaos"; position: absolute; top: 16px; right: 16px; padding: 4px 8px; rotate: 12deg;
+    font-family: 'Bungee', sans-serif; font-size: .8rem; color: var(--pop2); border: 2px solid var(--pop2); border-radius: 4px;
+  }
+  .recipe h3 { font-family: var(--display); font-size: clamp(1.5rem, 4.5vw, 2.1rem); line-height: 1.15; margin: 0 0 12px; max-width: 26ch; }
+  .stats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+  .stats span { border: var(--border); border-radius: 999px; padding: 3px 11px; font-size: .9rem; font-weight: 700; }
+  .cols { display: grid; grid-template-columns: 1fr 1.5fr; gap: 22px; }
+  @media (max-width: 620px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+  .recipe h4 { margin: 0 0 8px; font-size: 1rem; font-weight: 800; color: var(--muted); }
+  .recipe ul, .recipe ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .tick {
+    display: flex; gap: 10px; align-items: flex-start; width: 100%; padding: 6px 8px; text-align: left;
+    background: none; border: none; border-radius: 8px; color: var(--ink); line-height: 1.45;
+  }
+  .tick:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .tick .box {
+    flex: 0 0 auto; width: 1.55rem; height: 1.55rem; display: grid; place-items: center;
+    border: 2px solid var(--muted); border-radius: 7px; font-size: .8rem; font-weight: 800;
+    transition: background-color .2s, transform .2s;
+  }
+  .tick[aria-pressed="true"] .box { background: var(--pop); border-color: var(--pop); color: #12243f; transform: scale(1.12); }
+  .tick[aria-pressed="true"] .txt { text-decoration: line-through; opacity: .55; }
+  .note {
+    margin: 18px 0 0; padding: 12px 14px; border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0;
+    background: color-mix(in srgb, var(--accent) 9%, transparent);
+    font-family: 'Fraunces', Georgia, serif; font-style: italic;
+  }
+  .react { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 16px; color: var(--muted); font-weight: 700; }
+  .react button { background: none; border: var(--border); border-radius: 999px; padding: 4px 11px; font-size: 1.2rem; color: var(--ink); transition: transform .15s; }
+  .react button:hover { transform: scale(1.12) rotate(-6deg); }
+  .react .copy { margin-left: auto; font-size: .9rem; font-weight: 700; }
+  .follow { margin-top: 22px; }
+  .quick { margin-bottom: 12px; }
+
+  /* ============ Effects ============ */
+  #stickers { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: calc((var(--chaos) - .5) * 2); transition: opacity .4s; }
+  #stickers span { position: absolute; font-size: 2.6rem; animation: float 5s ease-in-out infinite; }
+  @keyframes float { 0%, 100% { transform: translateY(0) rotate(-10deg); } 50% { transform: translateY(-16px) rotate(12deg); } }
+  #fx { position: fixed; inset: 0; pointer-events: none; z-index: 50; overflow: hidden; }
+  #fx span { position: absolute; margin: -.9rem 0 0 -.9rem; font-size: 1.8rem; will-change: transform; }
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; z-index: 60; translate: -50% 10px; opacity: 0; pointer-events: none;
+    padding: 12px 20px; border-radius: 999px; font-weight: 800; background: var(--ink); color: var(--bg);
+    box-shadow: 0 10px 30px rgba(0,0,0,.25); transition: opacity .3s, translate .3s;
+  }
+  .toast.show { opacity: 1; translate: -50% 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body data-mode="classic">
+
+<div id="stickers" aria-hidden="true">
+  <span style="top:8%;left:4%">🌶️</span>
+  <span style="top:18%;right:5%;animation-delay:-1.2s">🍜</span>
+  <span style="top:46%;left:2%;animation-delay:-2.4s">🌮</span>
+  <span style="top:62%;right:3%;animation-delay:-.6s">🔥</span>
+  <span style="top:84%;left:6%;animation-delay:-3.1s">🥟</span>
+  <span style="top:90%;right:9%;animation-delay:-1.8s">🍢</span>
+</div>
+<div id="fx" aria-hidden="true"></div>
+
+<main class="wrap">
+  <header class="hero">
+    <div class="chef" id="chef" aria-hidden="true">👨‍🍳<span class="mood" id="mood">😌</span></div>
+    <h1 class="title" id="title" aria-label="Chaos Chef"></h1>
+    <p class="speech" id="speech" aria-live="polite"></p>
+  </header>
+
+  <section class="counter">
+    <div class="panel fridge" id="fridge">
+      <h2>What's in your fridge?</h2>
+      <p class="hint">Stick ingredients on the door. Tap a magnet to take it off.</p>
+      <div class="magnets" id="magnets" aria-label="Ingredients in your fridge"></div>
+      <form class="add-row" id="addForm">
+        <label class="sr" for="addInput">Add an ingredient</label>
+        <input class="field" id="addInput" autocomplete="off" placeholder="Type an ingredient, press Enter">
+        <button class="btn ghost" type="submit">Add</button>
+      </form>
+      <div class="pantry" id="pantry" aria-label="Quick add ingredients"></div>
+      <div class="row">
+        <button class="btn ghost" id="randomBtn" type="button">🎲 Random fridge</button>
+        <button class="btn big" id="cookBtn" type="button">Cook!</button>
+      </div>
+    </div>
+
+    <div class="panel dial" id="dial">
+      <div class="dial-head">
+        <h2><label for="chaos">Chaos level</label></h2>
+        <span class="temp-value" id="tempValue">0.20</span>
+      </div>
+      <p class="hint">This is the AI's temperature. Low is predictable, high is wild.</p>
+      <div class="range-wrap">
+        <span class="thumb-badge" id="thumbBadge" aria-hidden="true">🧊</span>
+        <input type="range" id="chaos" min="0" max="1" step="0.05" value="0.2">
+      </div>
+      <div class="scale" aria-hidden="true"><span>Cookbook</span><span>Bistro</span><span>Street food</span></div>
+      <div class="presets">
+        <button class="chip" data-v="0" type="button">🧊 Ice cold</button>
+        <button class="chip" data-v="0.5" type="button">🍳 Medium</button>
+        <button class="chip" data-v="1" type="button">🌋 Volcano</button>
+      </div>
+      <p class="mode-line" id="modeLine"></p>
+    </div>
+  </section>
+
+  <section id="table" hidden>
+    <div class="table-head">
+      <h2 class="table-title">On the table</h2>
+      <button class="btn ghost" id="clearBtn" type="button">🧽 Clear the table</button>
+    </div>
+    <div id="chat" aria-live="polite"></div>
+    <form class="panel follow" id="followForm" hidden>
+      <div class="quick" id="quick"></div>
+      <div class="follow-row">
+        <label class="sr" for="followInput">Ask the chef</label>
+        <input class="field" id="followInput" autocomplete="off" placeholder="Ask the chef: no oven? swap the cheese?">
+        <button class="btn" type="submit" id="askBtn">Ask</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+  /* ============ Content ============ */
+  const MODES = {
+    classic: {
+      mood: "😌", cook: "Cook!",
+      line: "📖 Classic cookbook: predictable, precise, formal.",
+      quotes: ["Precision is the soul of cooking.", "A recipe is a promise. I keep mine.", "Measure twice, stir once."],
+      loading: ["Preheating the oven…", "Consulting the cookbook…", "Measuring precisely…"],
+      done: ["Here you are. Exactly as written.", "Classic. Reliable. Delicious.", "Follow the steps and nothing can go wrong."]
+    },
+    bistro: {
+      mood: "😏", cook: "Cook with a twist",
+      line: "🍷 Bistro twist: a classic with one surprise.",
+      quotes: ["A little twist never hurt anyone.", "Trust me, the lemon belongs there.", "Ooh, I have an idea…"],
+      loading: ["Tasting the sauce…", "Adding a secret twist…", "Flambéing thoughtfully…"],
+      done: ["Voilà, with a little twist.", "Just the right amount of surprise.", "Your guests will ask for this recipe."]
+    },
+    chaos: {
+      mood: "🤪", cook: "Unleash the chef!",
+      line: "🔥 Street-food chaos: anything goes.",
+      quotes: ["Rules are just suggestions!", "Have you considered… pickles?", "The wok has chosen you.", "I see flavors nobody has seen!"],
+      loading: ["Igniting the wok of destiny…", "Asking the spices for permission…", "Breaking three culinary laws…", "Summoning the fusion gods…"],
+      done: ["Behold! Do not question it.", "I regret nothing.", "This dish never existed before. Until now."]
+    }
+  };
+  const PANTRY = ["🥚 eggs", "🧀 cheese", "🍅 tomatoes", "🍚 rice", "🥔 potatoes", "🥦 broccoli", "🍝 pasta", "🧄 garlic",
+                  "🍋 lemon", "🌶️ chili", "🥑 avocado", "🍫 chocolate", "🍌 banana", "🥫 chickpeas", "🍄 mushrooms",
+                  "🧅 onion", "🥛 milk", "🍯 honey", "🥒 pickles", "🐟 tuna"];
+  const MAGNET_COLORS = ["#ffd166", "#9be7a8", "#8fd3ff", "#c3b1ff", "#ffadd2", "#ffb38a"];
+  const HEAT = ["🧊", "🥗", "🍳", "🍜", "🌶️", "🌋"];
+  const BURST = {
+    classic: ["🥖", "🧈", "🍳", "🥕", "🌿"],
+    bistro: ["🍷", "🧀", "🍋", "🌿", "🥖", "🫒"],
+    chaos: ["🌶️", "🔥", "🍜", "🌮", "🥟", "🍕", "✨", "🧨"]
+  };
+  const REACTIONS = {
+    "😋": { label: "Yes, delicious", lines: ["Finally, someone with taste.", "I'll take that as a Michelin star."] },
+    "🤔": { label: "Not sure", lines: ["Bold of you to doubt me.", "Try it first, then judge."] },
+    "🤢": { label: "No way", lines: ["Fine. Turn the chaos down and I'll behave.", "Rude. Accurate, but rude."] }
+  };
+  const QUICK = [
+    { label: "🔁 Cook it again", run: () => cookFresh() },
+    { label: "🔥 More chaos", run: () => { setChaos(Number(slider.value) + 0.3); cookFresh(); } },
+    { label: "🧊 Calm it down", run: () => { setChaos(Number(slider.value) - 0.3); cookFresh(); } },
+    { label: "🌱 Make it vegan", run: () => ask("Make it vegan.") },
+    { label: "⏱️ 10 minutes max", run: () => ask("Change it so it takes 10 minutes max.") },
+    { label: "👵 Explain like a grandma", run: () => ask("Explain how to cook it like a sweet, chatty grandma would.") }
+  ];
+
+  /* ============ Elements & state ============ */
+  const $ = (id) => document.getElementById(id);
+  const root = document.documentElement;
+  const slider = $("chaos"), chat = $("chat"), speech = $("speech"), fx = $("fx");
+  const cookBtn = $("cookBtn"), askBtn = $("askBtn"), addInput = $("addInput");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let ingredients = [];   // magnets on the fridge
+  let lastFridge = [];    // what the current recipe was cooked from
+  let history = [];       // conversation sent to the AI
+  let lastMode = null, busy = false, colorIndex = 0, toastTimer;
+
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const modeFor = (v) => v < 0.34 ? "classic" : v < 0.67 ? "bistro" : "chaos";
+  const heatEmoji = (v) => HEAT[Math.min(HEAT.length - 1, Math.floor(v * HEAT.length))];
+  const keyOf = (s) => s.replace(/[^\p{L}\p{N} ]/gu, "").trim().toLowerCase();
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  /* ============ Little helpers ============ */
+  function speak(text) {
+    speech.textContent = text;
+    speech.classList.remove("pop"); void speech.offsetWidth; speech.classList.add("pop");
+  }
+  function toast(text) {
+    const t = $("toast");
+    t.textContent = text; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
+  }
+  function shake(node) { node.classList.remove("shake"); void node.offsetWidth; node.classList.add("shake"); }
+
+  // Food confetti flying out of an element
+  function burst(node, count, emojis) {
+    if (reduceMotion) return;
+    const r = node.getBoundingClientRect();
+    const x = r.left + r.width / 2, y = r.top + Math.min(r.height / 2, 90);
+    for (let i = 0; i < count; i++) {
+      const s = el("span", "", pick(emojis));
+      s.style.left = x + "px"; s.style.top = y + "px";
+      fx.appendChild(s);
+      const angle = Math.random() * Math.PI * 2, dist = 70 + Math.random() * 230;
+      const dx = Math.cos(angle) * dist, dy = Math.sin(angle) * dist - 70;
+      s.animate([
+        { transform: "translate(0,0) scale(.4) rotate(0deg)", opacity: 1 },
+        { transform: `translate(${dx}px,${dy}px) scale(1) rotate(${Math.random() * 540 - 270}deg)`, opacity: 1, offset: .6 },
+        { transform: `translate(${dx * 1.1}px,${dy + 140}px) scale(.9) rotate(${Math.random() * 720 - 360}deg)`, opacity: 0 }
+      ], { duration: 1100 + Math.random() * 700, easing: "cubic-bezier(.2,.7,.3,1)" }).onfinish = () => s.remove();
+    }
+  }
+
+  /* ============ The slider changes everything ============ */
+  function updateUI() {
+    const v = Number(slider.value);
+    const mode = modeFor(v);
+    root.style.setProperty("--chaos", v);
+    document.body.dataset.mode = mode;
+    $("tempValue").textContent = v.toFixed(2);
+    $("thumbBadge").textContent = heatEmoji(v);
+    $("thumbBadge").style.left = `calc(${v * 100}% + ${((0.5 - v) * 30).toFixed(1)}px)`;
+    $("mood").textContent = MODES[mode].mood;
+    $("modeLine").textContent = MODES[mode].line;
+    $("chef").style.setProperty("--speed", (2.6 - 2.1 * v).toFixed(2) + "s");
+    cookBtn.textContent = MODES[mode].cook;
+    if (mode !== lastMode) {
+      if (lastMode) {
+        speak(pick(MODES[mode].quotes));
+        burst($("dial"), mode === "chaos" ? 14 : 6, BURST[mode]);
+      }
+      lastMode = mode;
+    }
+  }
+  function setChaos(v) {
+    slider.value = Math.round(Math.min(1, Math.max(0, v)) * 20) / 20;
+    updateUI();
+  }
+
+  /* ============ Fridge magnets ============ */
+  function addIngredient(raw) {
+    const text = raw.trim().slice(0, 40);
+    if (!keyOf(text)) return;
+    const label = PANTRY.find((p) => keyOf(p) === keyOf(text)) || text;
+    if (ingredients.some((i) => keyOf(i.label) === keyOf(label))) return;
+    if (ingredients.length >= 12) { toast("The fridge holds 12 items. Take one off first."); return; }
+    ingredients.push({
+      label, fresh: true,
+      color: MAGNET_COLORS[colorIndex++ % MAGNET_COLORS.length],
+      tilt: Math.round(Math.random() * 10 - 5)
+    });
+  }
+  function renderMagnets() {
+    const box = $("magnets");
+    box.innerHTML = "";
+    ingredients.forEach((ing, i) => {
+      const b = el("button", "magnet" + (ing.fresh ? " drop" : ""), ing.label);
+      b.type = "button";
+      b.style.setProperty("--c", ing.color);
+      b.style.setProperty("--t", ing.tilt + "deg");
+      b.setAttribute("aria-label", `Remove ${ing.label}`);
+      const x = el("span", "x", "×"); x.setAttribute("aria-hidden", "true"); b.append(x);
+      b.addEventListener("click", () => { ingredients.splice(i, 1); renderMagnets(); });
+      box.append(b);
+      ing.fresh = false;
+    });
+    renderPantry();
+  }
+  function renderPantry() {
+    const box = $("pantry");
+    box.innerHTML = "";
+    PANTRY.slice(0, 12).forEach((p) => {
+      const inFridge = ingredients.some((i) => keyOf(i.label) === keyOf(p));
+      const b = el("button", "chip", p);
+      b.type = "button";
+      b.setAttribute("aria-pressed", String(inFridge));
+      b.addEventListener("click", () => {
+        if (inFridge) ingredients = ingredients.filter((i) => keyOf(i.label) !== keyOf(p));
+        else addIngredient(p);
+        renderMagnets();
+      });
+      box.append(b);
+    });
+  }
+  $("addForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    addInput.value.split(",").forEach(addIngredient);
+    addInput.value = "";
+    renderMagnets();
+  });
+  $("randomBtn").addEventListener("click", () => {
+    ingredients = [];
+    const shuffled = [...PANTRY].sort(() => Math.random() - 0.5);
+    shuffled.slice(0, 3 + Math.floor(Math.random() * 3)).forEach(addIngredient);
+    renderMagnets();
+    speak(pick(["Interesting fridge you have there.", "Bold choices. I like it.", "Let's see what I can do with this."]));
+    burst($("magnets"), 8, ingredients.map((i) => [...i.label][0]));
+  });
+
+  /* ============ Talking to the chef ============ */
+  cookBtn.addEventListener("click", () => {
+    if (addInput.value.trim()) { addInput.value.split(",").forEach(addIngredient); addInput.value = ""; renderMagnets(); }
+    if (!ingredients.length) {
+      speak("The fridge is empty. Add a few ingredients first.");
+      shake($("fridge")); addInput.focus();
+      return;
+    }
+    lastFridge = ingredients.map((i) => i.label);
+    cookFresh();
+  });
+  function cookFresh() {
+    const list = lastFridge.join(", ");
+    send(`Here is what's in my fridge: ${list}. What can I cook?`, `Cook with ${list}`, true);
+  }
+  function ask(text) { send(text, text, false); }
+
+  function setBusy(b) {
+    busy = b;
+    cookBtn.disabled = b; askBtn.disabled = b;
+    document.querySelectorAll("#quick .chip").forEach((c) => (c.disabled = b));
+  }
+
+  async function send(content, orderText, fresh) {
+    if (busy) return;
+    setBusy(true);
+    const temp = Number(slider.value);
+    const mode = modeFor(temp);
+    const backup = history;
+    if (fresh) history = [];
+
+    $("table").hidden = false;
+    const order = el("div", "order", orderText);
+    order.append(el("small", "", `${heatEmoji(temp)} at chaos ${temp.toFixed(2)}`));
+    chat.append(order);
+    history.push({ role: "user", content });
+    const cooking = showCooking(mode);
+
+    try {
+      const res = await fetch("/api/chef", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: history, temperature: temp })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `The kitchen returned error ${res.status}. Check that api/chef.js is deployed.`);
+
+      history.push({ role: "assistant", content: data.reply });
+      cooking.stop();
+      const card = renderReply(data.reply, temp);
+      $("followForm").hidden = false;
+      speak(pick(MODES[mode].done));
+      burst(card, Math.round(6 + temp * 26), BURST[mode]);
+      card.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    } catch (err) {
+      if (fresh) history = backup; else history.pop();
+      cooking.stop();
+      chat.append(el("div", "error", "⚠️ " + err.message));
+      speak("Something burned. The note on the table says what happened.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function showCooking(mode) {
+    const box = el("div", "cooking");
+    const pot = el("span", "pot", "🍲");
+    pot.setAttribute("aria-hidden", "true");
+    pot.append(el("i"), el("i"), el("i"));
+    const label = el("span", "", MODES[mode].loading[0]);
+    box.append(pot, label);
+    chat.append(box);
+    box.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
+    let i = 0;
+    const timer = setInterval(() => { i = (i + 1) % MODES[mode].loading.length; label.textContent = MODES[mode].loading[i]; }, 1300);
+    return { stop() { clearInterval(timer); box.remove(); } };
+  }
+
+  /* ============ Turning the AI's answer into a recipe card ============ */
+  function parseRecipe(raw) {
+    const text = raw.replace(/\*\*/g, "").replace(/^#+\s*/gm, "");
+    const r = { dish: "", time: "", difficulty: "", ingredients: [], steps: [], note: "" };
+    let section = null;
+    for (const original of text.split("\n")) {
+      const line = original.trim();
+      if (!line) continue;
+      const m = line.match(/^(DISH|TIME|DIFFICULTY|INGREDIENTS|STEPS|CHEF['’]?S NOTE)\s*:\s*(.*)$/i);
+      if (m) {
+        const key = m[1].toUpperCase().replace(/['’]/g, "");
+        const rest = m[2].trim();
+        section = null;
+        if (key === "DISH") r.dish = rest;
+        else if (key === "TIME") r.time = rest;
+        else if (key === "DIFFICULTY") r.difficulty = rest;
+        else if (key === "CHEFS NOTE") { r.note = rest; section = "note"; }
+        else if (key === "INGREDIENTS") { section = "ing"; if (rest) r.ingredients.push(rest); }
+        else if (key === "STEPS") { section = "steps"; if (rest) r.steps.push(rest); }
+        continue;
+      }
+      if (section === "ing") r.ingredients.push(line.replace(/^[-•*]\s*/, ""));
+      else if (section === "steps") r.steps.push(line.replace(/^\d+[.)]\s*/, ""));
+      else if (section === "note") r.note += " " + line;
+    }
+    return r.dish && r.steps.length ? r : null;
+  }
+
+  function renderReply(reply, temp) {
+    const madeText = `${heatEmoji(temp)} Cooked at chaos ${temp.toFixed(2)}`;
+    const r = parseRecipe(reply);
+    if (!r) {
+      const plain = el("div", "reply");
+      plain.append(el("span", "made", madeText), document.createTextNode(reply.replace(/\*\*/g, "")));
+      chat.append(plain);
+      return plain;
+    }
+
+    const card = el("article", "recipe");
+    card.style.setProperty("--r", (Math.random() * 2 - 1).toFixed(2));
+    card.append(el("span", "made", madeText), el("h3", "", r.dish));
+
+    const stats = el("div", "stats");
+    if (r.time) stats.append(el("span", "", `⏱️ ${r.time}`));
+    if (r.difficulty) stats.append(el("span", "", `🔪 ${r.difficulty}`));
+    stats.append(el("span", "", `🧾 ${r.ingredients.length} ingredients`));
+    card.append(stats);
+
+    const cols = el("div", "cols");
+    const left = el("div"), right = el("div");
+    const ul = el("ul"), ol = el("ol");
+    r.ingredients.forEach((t) => ul.append(tickItem(t, card)));
+    r.steps.forEach((t, i) => ol.append(tickItem(t, card, i + 1)));
+    left.append(el("h4", "", "Ingredients"), ul);
+    right.append(el("h4", "", "Steps"), ol);
+    cols.append(left, right);
+    card.append(cols);
+
+    if (r.note) card.append(el("p", "note", `👨‍🍳 ${r.note.trim()}`));
+
+    const react = el("div", "react");
+    react.append(el("span", "", "Would you eat this?"));
+    for (const [emoji, info] of Object.entries(REACTIONS)) {
+      const b = el("button", "", emoji);
+      b.type = "button";
+      b.setAttribute("aria-label", info.label);
+      b.addEventListener("click", () => { speak(pick(info.lines)); burst(b, 8, [emoji]); });
+      react.append(b);
+    }
+    const copy = el("button", "copy", "📋 Copy recipe");
+    copy.type = "button";
+    copy.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(reply); toast("Recipe copied"); }
+      catch { toast("This browser blocked copying. Select the text instead."); }
+    });
+    react.append(copy);
+    card.append(react);
+
+    chat.append(card);
+    return card;
+  }
+
+  // Ingredients and steps you can tick off while cooking
+  function tickItem(text, card, n) {
+    const li = el("li");
+    const b = el("button", "tick");
+    b.type = "button";
+    b.setAttribute("aria-pressed", "false");
+    const box = el("span", "box", n ? String(n) : "");
+    box.setAttribute("aria-hidden", "true");
+    b.append(box, el("span", "txt", text));
+    b.addEventListener("click", () => {
+      const on = b.getAttribute("aria-pressed") !== "true";
+      b.setAttribute("aria-pressed", String(on));
+      box.textContent = on ? "✓" : (n ? String(n) : "");
+      if (on && n) {
+        const steps = [...card.querySelectorAll("ol .tick")];
+        if (steps.every((s) => s.getAttribute("aria-pressed") === "true")) {
+          toast("Bon appétit! 🎉");
+          speak("You did it. I'm almost proud.");
+          burst(card, 30, ["🎉", "✨", "🍽️", "⭐"]);
+        }
+      }
+    });
+    li.append(b);
+    return li;
+  }
+
+  /* ============ Follow-ups ============ */
+  QUICK.forEach((q) => {
+    const b = el("button", "chip", q.label);
+    b.type = "button";
+    b.addEventListener("click", q.run);
+    $("quick").append(b);
+  });
+  $("followForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const text = $("followInput").value.trim();
+    if (!text) return;
+    $("followInput").value = "";
+    ask(text);
+  });
+  $("clearBtn").addEventListener("click", () => {
+    chat.innerHTML = "";
+    history = [];
+    $("followForm").hidden = true;
+    $("table").hidden = true;
+    speak("The table is clean. What are we cooking next?");
+  });
+
+  /* ============ Start ============ */
+  "Chaos Chef".split("").forEach((ch) => {
+    const s = el("span", "", ch === " " ? " " : ch);
+    s.setAttribute("aria-hidden", "true");
+    s.style.setProperty("--a", (Math.random() * 2 - 1).toFixed(2));
+    s.style.setProperty("--b", (Math.random() * 2 - 1).toFixed(2));
+    $("title").append(s);
+  });
+  document.querySelectorAll(".presets .chip").forEach((b) =>
+    b.addEventListener("click", () => setChaos(Number(b.dataset.v)))
+  );
+  slider.addEventListener("input", updateUI);
+  renderMagnets();
+  updateUI();
+  speak("Hi! Fill the fridge, set the chaos level, and I'll cook something.");
+</script>
+</body>
+</html>
